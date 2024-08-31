@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>組織図と目的</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        [v-cloak] { display: none; }
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.5s ease;
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="app" v-cloak class="max-w-6xl mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-8">組織図と目的</h1>
+        
+        <div class="mb-8">
+            <button @click="currentView = 'goals'" :class="{'bg-blue-500 text-white': currentView === 'goals', 'bg-gray-200 text-gray-700': currentView !== 'goals'}" class="px-4 py-2 rounded-l-lg focus:outline-none transition duration-300">目的</button>
+            <button @click="currentView = 'chart'" :class="{'bg-blue-500 text-white': currentView === 'chart', 'bg-gray-200 text-gray-700': currentView !== 'chart'}" class="px-4 py-2 rounded-r-lg focus:outline-none transition duration-300">組織図</button>
+        </div>
+
+        <transition name="fade" mode="out-in">
+            <div v-if="currentView === 'goals'" key="goals" class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-2xl font-bold text-center mb-6">組織・責任者を明確化する目的</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div v-for="(goal, index) in goals" :key="index" class="bg-gray-50 rounded-lg shadow p-4">
+                        <div class="flex items-center mb-4">
+                            <i :class="goal.icon" class="text-blue-500 mr-2 text-2xl"></i>
+                            <h3 class="text-lg font-semibold">{{ goal.title }}</h3>
+                        </div>
+                        <ul class="list-disc pl-5">
+                            <li v-for="(item, itemIndex) in goal.items" :key="itemIndex" class="mb-2 text-sm">{{ item }}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-8 text-center text-sm text-gray-600">
+                    <p>明確な組織構造と責任分担で、より効率的で活気のあるチームへ</p>
+                    <i class="ri-arrow-right-line inline-block mt-2 text-xl"></i>
+                </div>
+            </div>
+
+            <div v-else-if="currentView === 'chart'" key="chart" class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-center mb-8">
+                    <i class="ri-team-line mr-2 text-blue-600 text-2xl"></i>
+                    <span class="text-xl font-semibold">総メンバー数: {{ totalMembers }}名</span>
+                </div>
+                <div v-for="(dept, index) in departments" :key="index" class="border rounded-lg p-4 mb-4 bg-gray-50 shadow-sm">
+                    <div @click="toggleDepartment(index)" class="flex justify-between items-center cursor-pointer">
+                        <h3 class="text-lg font-semibold">{{ dept.name }}</h3>
+                        <i :class="expandedDepts[index] ? 'ri-arrow-down-s-line' : 'ri-arrow-right-s-line'" class="text-xl"></i>
+                    </div>
+                    <transition name="fade">
+                        <div v-if="expandedDepts[index]" class="mt-4">
+                            <p><strong>外部向け名称:</strong> {{ dept.externalName }}</p>
+                            <p><strong>管掌:</strong> {{ dept.manager }}</p>
+                            <p><strong>機能・役割:</strong> {{ dept.role }}</p>
+                            <p><strong>メンバー:</strong> {{ dept.members.join(", ") }}</p>
+                            <p class="mt-2 text-sm text-gray-600 whitespace-pre-line">{{ dept.details }}</p>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue
+
+        createApp({
+            setup() {
+                const currentView = ref('goals')
+
+                const goals = [
+                    {
+                        icon: "ri-user-smile-line",
+                        title: "①タダメンのペイン解消",
+                        items: [
+                            "「誰に相談・提案したら良いか分からない（たらいまわし）」を減らす",
+                            "「誰に提案したら良いか分からない。提案しても結論が出ない（遅い）」を減らす"
+                        ]
+                    },
+                    {
+                        icon: "ri-chat-smile-3-line",
+                        title: "②タダメンの横のコミュニケーション強化",
+                        items: [
+                            "誰が何をしているのかを見える化して、「自分も一緒にやってみたい！」を増やす"
+                        ]
+                    },
+                    {
+                        icon: "ri-calendar-check-line",
+                        title: "③マネジメントメンバーのタスクシフト",
+                        items: [
+                            "「そんなに細かいことを聞かれても困る」を減らす",
+                            "ほったらかしにしてしまっているタダメン（特に新メンバー）を減らす"
+                        ]
+                    }
+                ]
+
+                const departments = ref([
+                    {
+                        name: "法人経営室",
+                        externalName: "しっかり法人を経営し隊",
+                        manager: "ヒロス",
+                        role: "経営管理全般",
+                        members: ["ヒデ", "スミヤ", "ヤタケル", "ンケイ"],
+                        details: "室長：ヒロス、副室長：ミヤヤ？\n労務管理全般\n理事全員"
+                    },
+                    {
+                        name: "会計・監査・税務室",
+                        externalName: "ちゃんとお金を管理し隊",
+                        manager: "ヒロス",
+                        role: "経理全般",
+                        members: ["ケイ", "スミヤヤ"],
+                        details: "室長：ヒデ\nガバナンス全般"
+                    },
+                    {
+                        name: "広報・マーケティング室",
+                        externalName: "広報がんばり隊",
+                        manager: "ヒロス",
+                        role: "メルマガ・ＳＮＳ・ＨＰ運営",
+                        members: ["イチチ", "ゆずるん", "アカナ", "チロル"],
+                        details: "室長：イチチ、副室長：ゆずるん\nスポンサー＆業務委託先のマーケ支援\nシロロ まこと タダレク"
+                    },
+                    {
+                        name: "ファンドレイジング室",
+                        externalName: "もっと寄付を集め隊",
+                        manager: "ヒロス",
+                        role: "寄付・返礼",
+                        members: ["ゆずるん", "イチチ"],
+                        details: "室長：ゆずるん\nオリジナルグッズづくり・管理"
+                    },
+                    {
+                        name: "ＩＣＴ研修企画室",
+                        externalName: "タダスクわいわい盛り上げ隊",
+                        manager: "ヒロロ",
+                        role: "タダスク",
+                        members: ["ミヤヤ", "まこと", "シロロ", "ノブブ"],
+                        details: "室長：ヒロロ、副室長：ヒデデン\nタダサポ\n＊もっとタダスクをよくしたい所属者"
+                    },
+                    {
+                        name: "人財育成室",
+                        externalName: "みんなでスキルアップし隊",
+                        manager: "ヒロロ",
+                        role: "タダスク講師の育成",
+                        members: ["アカナ", "ミヤヤ", "まこと", "シロロ"],
+                        details: "室長：まこと\nタダスク講師のオンボーディング\nノブブ イチチ さゆりん\n＊新講師サポートチーム所属者"
+                    },
+                    {
+                        name: "ICT講師派遣 事務局",
+                        externalName: "出張タダスクで喜ばれ隊",
+                        manager: "ヒデデン",
+                        role: "出張タダスク",
+                        members: ["ノブブ"],
+                        details: "事務局長：ヒデデン\n＊全国制覇グループ所属者"
+                    },
+                    {
+                        name: "コミュニティマネジメント室",
+                        externalName: "みんなと仲良くし隊",
+                        manager: "ヒデデン",
+                        role: "タダコミュ",
+                        members: ["さゆりん", "アカナ", "イチチ", "さくみん"],
+                        details: "室長：さゆりん\nたださぽCHA\n＊タダコミュ開設準備室所属者\n交流イベント企画・運営"
+                    },
+                    {
+                        name: "生成AI研究所",
+                        externalName: "それいけAI探検隊",
+                        manager: "ヒデデン",
+                        role: "生成ＡＩの活用法研究",
+                        members: ["ノブブ", "おハム"],
+                        details: "所長：ノブブ、副所長：ヒデデン\nＡＩ適ケア\n＊AI適ケア所属者"
+                    },
+                    {
+                        name: "情報システム部",
+                        externalName: "システムつくり隊",
+                        manager: "ヤス",
+                        role: "システム開発",
+                        members: ["ミヤヤ", "トモゾゥ", "よもぎ", "ノブブ"],
+                        details: "部長：ヤス\nkintone\nトモロゥ\n＊技術部屋所属者"
+                    },
+                    {
+                        name: "事業開発室",
+                        externalName: "おもろい事やってやり隊",
+                        manager: "ヤス",
+                        role: "ホームページ",
+                        members: [],
+                        details: "室長：シロロ\nおちゃらけ"
+                    }
+                ])
+
+                const expandedDepts = ref({})
+
+                const toggleDepartment = (index) => {
+                    expandedDepts.value[index] = !expandedDepts.value[index]
+                }
+
+                const totalMembers = computed(() => {
+                    return departments.value.reduce((acc, dept) => acc + dept.members.length, 0)
+                })
+
+                return {
+                    currentView,
+                    goals,
+                    departments,
+                    expandedDepts,
+                    toggleDepartment,
+                    totalMembers
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>

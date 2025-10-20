@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@oraios/serena"
+      ],
+      "env": {
+        "SERENA_WORKSPACE": "/home/user/vercel"
+      }
+    }
+  }
+}
